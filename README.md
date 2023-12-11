@@ -14,6 +14,5 @@ QRScan - Android app
  	<li>Easily customizable.</li>
   	<li>Clean Kotlin code.</li>
 </ul>
-
-![](screenshots/01.png)
-![](screenshots/02.png)
+<img src="screenshots/01.png" alt="Image" width="300"/>
+<img src="screenshots/02.png" alt="Image" width="300"/>
