@@ -9,7 +9,9 @@ MovieDB - Android app
 <ul>
 	<li>Jetpack Compose.</li>
 	<li>Retrofit 2 for networking.</li>  
+	<li>Paging 3 library for pagination.</li>  
 	<li>Dagger Hilt for dependency injection.</li>
+	<li>Coil for images loading.</li>
 	<li>Kotlin flows and coroutines.</li>
 	<li>Material 3.</li>
  	<li>Clean architecture.</li>
