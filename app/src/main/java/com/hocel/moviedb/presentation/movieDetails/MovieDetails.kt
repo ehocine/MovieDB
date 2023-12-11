@@ -90,7 +90,9 @@ fun MovieDetails(
 
         when (uiState) {
             is UiState.Loading -> {
-                CircularProgressIndicator()
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
             }
 
             is UiState.Success -> {
