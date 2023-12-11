@@ -26,10 +26,12 @@ fun convertMinutes(minutes: Int): String {
 
 fun showStatusBar(context: Context) {
     val window = (context as? Activity)?.window
-    val windowInsetsController = window?.let { window.decorView?.let { it1 ->
-        WindowCompat.getInsetsController(it,
-            it1
-        )
-    } }
+    val windowInsetsController = window?.let {
+        window.decorView.let { it1 ->
+            WindowCompat.getInsetsController(it,
+                it1
+            )
+        }
+    }
     windowInsetsController?.show(WindowInsetsCompat.Type.statusBars())
 }

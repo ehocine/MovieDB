@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -138,12 +139,12 @@ fun MovieDetails(
                             Box(
                                 Modifier
                                     .align(Alignment.TopStart)
-                                    .padding(14.dp)
+                                    .padding(16.dp)
                                     .background(
                                         Color.Black.copy(0.8f),
-                                        shape = RoundedCornerShape(16.dp)
+                                        shape = CircleShape
                                     )
-                                    .padding(6.dp)
+                                    .padding(3.dp)
                             ) {
                                 IconButton(onClick = {
                                     navController.navigateUp()
@@ -159,7 +160,7 @@ fun MovieDetails(
                             Box(
                                 Modifier
                                     .align(Alignment.BottomStart)
-                                    .padding(4.dp)
+                                    .padding(horizontal = 16.dp, vertical = 6.dp)
                                     .background(
                                         Color.Black.copy(0.8f),
                                         shape = RoundedCornerShape(10.dp)

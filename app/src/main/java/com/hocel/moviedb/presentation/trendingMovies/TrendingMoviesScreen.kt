@@ -32,7 +32,6 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.hocel.moviedb.data.models.trendingMovies.Result
-import com.hocel.moviedb.presentation.components.ItemMovieCard
 import com.hocel.moviedb.presentation.navigation.Screens
 import com.hocel.moviedb.ui.theme.BackgroundColor
 import com.hocel.moviedb.ui.theme.TextColor

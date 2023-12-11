@@ -1,4 +1,4 @@
-package com.hocel.moviedb.presentation.components
+package com.hocel.moviedb.presentation.trendingMovies
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

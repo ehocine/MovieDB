@@ -86,10 +86,6 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.6")
 
-    // Paging
-//    implementation "androidx.paging:paging-runtime-ktx:3.1.1"
-//    implementation "androidx.paging:paging-compose:1.0.0-alpha16"
-
     implementation("androidx.paging:paging-runtime-ktx:3.2.1")
     implementation("androidx.paging:paging-compose:3.2.1")
 }
