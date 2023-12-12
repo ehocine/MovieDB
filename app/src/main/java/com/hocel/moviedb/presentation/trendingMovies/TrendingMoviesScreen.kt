@@ -32,6 +32,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.hocel.moviedb.data.models.trendingMovies.Result
+import com.hocel.moviedb.presentation.components.FailedView
 import com.hocel.moviedb.presentation.navigation.Screens
 import com.hocel.moviedb.ui.theme.BackgroundColor
 import com.hocel.moviedb.ui.theme.TextColor
@@ -113,7 +114,13 @@ private fun TrendingMoviesList(
 
             is LoadState.Error -> {
                 item {
-                    //FailView
+                    FailedView(
+                        modifier = Modifier.fillParentMaxSize(),
+                        retryable = true,
+                        onRetry = {
+                            moviesListLazy::retry.invoke()
+                        }
+                    )
                 }
             }
 
@@ -127,7 +134,6 @@ private fun TrendingMoviesList(
                             .padding(top = 12.dp)
                     ) {
                         CircularProgressIndicator()
-//                        LoadingView(modifier = Modifier.size(30.dp))
                     }
                 }
             }
@@ -138,7 +144,13 @@ private fun TrendingMoviesList(
         when (moviesListLazy?.loadState?.append) {
             is LoadState.Error -> {
                 item {
-//                    FailView(onRetry = lazyEarnings::retry)
+                    FailedView(
+                        modifier = Modifier.fillParentMaxSize(),
+                        retryable = true,
+                        onRetry = {
+                            moviesListLazy::retry.invoke()
+                        }
+                    )
                 }
             }
 
@@ -152,7 +164,6 @@ private fun TrendingMoviesList(
                             .padding(top = 12.dp)
                     ) {
                         CircularProgressIndicator()
-//                        LoadingView(modifier = Modifier.size(30.dp))
                     }
                 }
             }
