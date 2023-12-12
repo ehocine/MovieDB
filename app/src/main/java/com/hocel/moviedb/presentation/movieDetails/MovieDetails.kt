@@ -106,14 +106,13 @@ fun MovieDetails(
                         Box(Modifier.fillMaxWidth()) {
                             SubcomposeAsyncImage(
                                 modifier = Modifier
-                                    .height(350.dp)
+                                    .height(400.dp)
                                     .fillMaxWidth()
                                     .clip(RectangleShape)
                                     .align(Alignment.TopCenter),
                                 model = ImageRequest.Builder(LocalContext.current)
                                     .data("${Constants.Original_IMAGE_BASE_URL}${it.posterPath}")
                                     .crossfade(true)
-//                            .error(R.drawable.no_image)
                                     .build(),
                                 contentDescription = "Image"
                             ) {
@@ -229,6 +228,7 @@ fun MovieDetails(
                                         genre?.let {
                                             AssistChip(
                                                 onClick = {},
+                                                enabled = false,
                                                 label = {
                                                     Text(
                                                         text = "${genre.name}",

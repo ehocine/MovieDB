@@ -8,6 +8,7 @@ import com.hocel.moviedb.data.models.trendingMovies.Result
 import com.hocel.moviedb.data.repository.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
@@ -20,8 +21,13 @@ class TrendingMoviesViewModel @Inject constructor(
         MutableStateFlow(value = PagingData.empty())
     val pagedTrendingMovies: MutableStateFlow<PagingData<Result>> get() = _pagedTrendingMovies
 
+    init {
+        viewModelScope.launch {
+            getTrendingMoviesPaged()
+        }
+    }
 
-    suspend fun getTrendingMoviesPaged() {
+    private suspend fun getTrendingMoviesPaged() {
         repository.getTrendingMoviesPaged().cachedIn(viewModelScope).collect {
             _pagedTrendingMovies.value = it
         }

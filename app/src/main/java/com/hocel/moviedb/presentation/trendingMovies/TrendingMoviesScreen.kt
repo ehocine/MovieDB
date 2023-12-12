@@ -47,7 +47,6 @@ fun TrendingMoviesScreen(
     val context = LocalContext.current
     LaunchedEffect(key1 = Unit) {
         showStatusBar(context)
-        viewModel.getTrendingMoviesPaged()
     }
     val lifecycleOwner = LocalLifecycleOwner.current
     val trendingMoviesListFlow = remember(viewModel.pagedTrendingMovies, lifecycleOwner) {
@@ -88,7 +87,6 @@ private fun TrendingMoviesList(
     moviesListLazy: LazyPagingItems<Result>?,
     navController: NavController
 ) {
-
     LazyColumn(
         contentPadding = PaddingValues(
             top = 10.dp
