@@ -3,7 +3,7 @@ package com.hocel.moviedb.data.models.trendingMovies
 
 import com.google.gson.annotations.SerializedName
 
-data class TrendingMoviesResponse(
+data class MoviesResponse(
     @SerializedName("page")
     val page: Int?,
     @SerializedName("results")

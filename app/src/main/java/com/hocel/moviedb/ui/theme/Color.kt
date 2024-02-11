@@ -31,6 +31,8 @@ val background_content_light = Color(0xFFEEEEEE)
 
 val darkBackground = Color(0xFF121212)
 
+val Inputs = Color(0xFFdfecf4)
+
 
 val SentBubbleColor: Color
     @Composable

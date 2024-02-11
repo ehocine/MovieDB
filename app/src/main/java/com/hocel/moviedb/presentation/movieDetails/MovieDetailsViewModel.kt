@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hocel.moviedb.data.models.movieDetails.MovieDetailsResponse
+import com.hocel.moviedb.data.models.trendingMovies.MoviesResponse
 import com.hocel.moviedb.data.repository.Repository
 import com.hocel.moviedb.utils.uiState.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,8 +23,14 @@ class MovieDetailsViewModel @Inject constructor(
     private val _movieUiState: MutableStateFlow<UiState?> = MutableStateFlow(null)
     val movieUiState: StateFlow<UiState?> get() = _movieUiState
 
+    private val _movieRecommendationUiState: MutableStateFlow<UiState?> = MutableStateFlow(null)
+    val movieRecommendationUiState: StateFlow<UiState?> get() = _movieRecommendationUiState
+
     private val _movieDetails: MutableState<MovieDetailsResponse?> = mutableStateOf(null)
     val movieDetails: State<MovieDetailsResponse?> get() = _movieDetails
+
+    private val _movieRecommendations: MutableState<MoviesResponse?> = mutableStateOf(null)
+    val movieRecommendations: State<MoviesResponse?> get() = _movieRecommendations
 
 
     fun getMovieDetailsData(movieId: Int) {
@@ -42,6 +49,26 @@ class MovieDetailsViewModel @Inject constructor(
 
             } catch (e: Exception) {
                 _movieUiState.value = UiState.Fail
+            }
+        }
+    }
+
+    fun getMovieRecommendations(movieId: Int) {
+        viewModelScope.launch {
+            try {
+                _movieRecommendationUiState.value = UiState.Loading
+
+                val response = repository.getMovieRecommendations(movieId)
+
+                if (response.isSuccessful) {
+                    _movieRecommendationUiState.value = UiState.Success
+                    _movieRecommendations.value = response.body()
+                } else {
+                    _movieRecommendationUiState.value = UiState.Fail
+                }
+
+            } catch (e: Exception) {
+                _movieRecommendationUiState.value = UiState.Fail
             }
         }
     }

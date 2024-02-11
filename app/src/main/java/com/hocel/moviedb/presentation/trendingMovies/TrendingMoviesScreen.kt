@@ -1,23 +1,43 @@
 package com.hocel.moviedb.presentation.trendingMovies
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -56,38 +76,106 @@ fun TrendingMoviesScreen(
         )
     }
     val moviesListLazy = trendingMoviesListFlow.collectAsLazyPagingItems()
+    var showSearchBar by remember { mutableStateOf(false) }
+    var searchText by remember { mutableStateOf("") }
+    var searchBarActive by remember { mutableStateOf(false) }
+
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
+    var showBottomSheet by remember { mutableStateOf(false) }
+
+    val listOfGenres by viewModel.listOfGenres
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        "Trending movies",
-                        color = TextColor,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Box {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(end = 10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Trending movies",
+                                color = TextColor,
+                                fontWeight = FontWeight.Bold
+                            )
+                            if (!showSearchBar) {
+                                Icon(
+                                    modifier = Modifier.clickable {
+                                        showSearchBar = !showSearchBar
+                                    },
+                                    imageVector = Icons.Default.Search,
+                                    tint = TextColor,
+                                    contentDescription = "Search icon"
+                                )
+                            }
+                        }
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundColor)
             )
         }
     ) { paddingValues ->
+        if (showBottomSheet) {
+            ModalBottomSheet(
+                containerColor = BackgroundColor,
+                onDismissRequest = { showBottomSheet = false }) {
+                FilterSheetContent(listOfGenres)
+            }
+        }
         Box(
             modifier = Modifier
                 .padding(top = paddingValues.calculateTopPadding())
                 .background(BackgroundColor)
                 .fillMaxSize()
         ) {
-            TrendingMoviesList(moviesListLazy, navController)
+            Column(modifier = Modifier.padding(6.dp)) {
+                SearchBar(
+                    showSearchBar = showSearchBar,
+                    searchBarActive = searchBarActive,
+                    searchText = searchText,
+                    onSearch = {
+
+                    },
+                    onQueryChange = {
+                        searchText = it
+                        viewModel.searchMovies(it)
+                    },
+                    onActiveChange = {
+                        showSearchBar = it
+                        searchBarActive = it
+                    },
+                    onCloseClicked = {
+                        if (searchText.isNotBlank()) {
+                            searchText = ""
+                        } else {
+                            showSearchBar = false
+                            searchBarActive = false
+                            viewModel.getTrendingMoviesPaged()
+                        }
+                    },
+                    onFilterClicked = {
+                        showBottomSheet = true
+                    }
+                )
+                TrendingMoviesList(moviesListLazy = moviesListLazy, navController = navController)
+            }
         }
     }
 }
 
 @Composable
 private fun TrendingMoviesList(
+    modifier: Modifier = Modifier,
     moviesListLazy: LazyPagingItems<Result>?,
     navController: NavController
 ) {
     LazyColumn(
+        modifier = modifier,
         contentPadding = PaddingValues(
             top = 10.dp
         )
@@ -97,7 +185,6 @@ private fun TrendingMoviesList(
                 Box(modifier = Modifier.fillMaxWidth()) {
                     index.let {
                         val item = moviesListLazy[it]!!
-
                         ItemMovieCard(
                             movie = item,
                             onItemClicked = {
@@ -181,6 +268,75 @@ private fun TrendingMoviesList(
             }
 
             else -> {}
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SearchBar(
+    modifier: Modifier = Modifier,
+    showSearchBar: Boolean,
+    searchBarActive: Boolean,
+    searchText: String,
+    onSearch: (String) -> Unit,
+    onQueryChange: (String) -> Unit,
+    onActiveChange: (Boolean) -> Unit,
+    onCloseClicked: () -> Unit,
+    onFilterClicked: () -> Unit
+) {
+    AnimatedVisibility(
+        modifier = modifier,
+        visible = showSearchBar,
+        enter = fadeIn() + expandVertically(),
+        exit = fadeOut() + shrinkVertically(),
+    ) {
+        DockedSearchBar(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            query = searchText,
+            onQueryChange = {
+                onQueryChange(it)
+            },
+            onSearch = {
+                onSearch(it)
+            },
+            active = false,
+            onActiveChange = {
+                onActiveChange(it)
+            },
+            placeholder = {
+                Text(text = "Search", color = TextColor)
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = null,
+                    tint = TextColor
+                )
+            },
+            trailingIcon = {
+                Row {
+                    Icon(
+                        modifier = Modifier.clickable {
+                            onCloseClicked()
+                        },
+                        imageVector = Icons.Default.Close,
+                        contentDescription = null,
+                        tint = TextColor
+                    )
+                    Icon(
+                        modifier = Modifier.clickable {
+                            onFilterClicked()
+                        },
+                        imageVector = Icons.Default.Menu,
+                        contentDescription = null,
+                        tint = TextColor
+                    )
+                }
+            }
+        ) {
+
         }
     }
 }

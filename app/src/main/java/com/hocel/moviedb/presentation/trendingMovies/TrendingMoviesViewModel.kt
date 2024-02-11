@@ -1,9 +1,13 @@
 package com.hocel.moviedb.presentation.trendingMovies
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.hocel.moviedb.data.models.genres.Genres
 import com.hocel.moviedb.data.models.trendingMovies.Result
 import com.hocel.moviedb.data.repository.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,16 +25,31 @@ class TrendingMoviesViewModel @Inject constructor(
         MutableStateFlow(value = PagingData.empty())
     val pagedTrendingMovies: MutableStateFlow<PagingData<Result>> get() = _pagedTrendingMovies
 
+    private var _listOfGenres: MutableState<Genres> = mutableStateOf(Genres())
+    val listOfGenres: State<Genres> = _listOfGenres
+
     init {
+        getTrendingMoviesPaged()
         viewModelScope.launch {
-            getTrendingMoviesPaged()
+            _listOfGenres.value = repository.getListOfGenres()
         }
     }
 
-    private suspend fun getTrendingMoviesPaged() {
-        repository.getTrendingMoviesPaged().cachedIn(viewModelScope).collect {
-            _pagedTrendingMovies.value = it
+    fun getTrendingMoviesPaged() {
+        viewModelScope.launch {
+            repository.getTrendingMoviesPaged().cachedIn(viewModelScope).collect {
+                _pagedTrendingMovies.value = it
+            }
         }
     }
+
+    fun searchMovies(query: String) {
+        viewModelScope.launch {
+            repository.searchMovies(query = query).cachedIn(viewModelScope).collect {
+                _pagedTrendingMovies.value = it
+            }
+        }
+    }
+
 
 }

@@ -41,13 +41,13 @@ import com.hocel.moviedb.ui.theme.TextColor
 import com.hocel.moviedb.utils.Constants.IMAGE_BASE_URL
 
 @Composable
-fun ItemMovieCard(movie: Result, onItemClicked: (movie: Result) -> Unit) {
+fun ItemMovieCard(movie: Result, onItemClicked: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(6.dp)
+            .padding(vertical = 6.dp)
             .clip(RoundedCornerShape(16.dp))
-            .clickable(onClick = { onItemClicked(movie) }),
+            .clickable(onClick = { onItemClicked() }),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors = CardDefaults.cardColors(containerColor = CardColor),
     ) {
@@ -91,7 +91,7 @@ fun ItemMovieCard(movie: Result, onItemClicked: (movie: Result) -> Unit) {
                         .padding(8.dp)
                 ) {
                     Text(
-                        text = "${movie.voteAverage}",
+                        text = String.format("%.1f", movie.voteAverage),
                         style = typography.bodyMedium,
                         color = White,
                     )
@@ -131,13 +131,6 @@ fun ItemMovieCard(movie: Result, onItemClicked: (movie: Result) -> Unit) {
                         overflow = TextOverflow.Ellipsis,
                         style = typography.labelMedium
                     )
-                }
-                Row(
-                    modifier = Modifier
-                        .padding(start = 20.dp, end = 20.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
                 }
             }
         }
