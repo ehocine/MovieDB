@@ -1,15 +1,18 @@
-package com.hocel.moviedb.data.models.trendingMovies
+package com.hocel.moviedb.data.models.movieDetails
 
 
 import com.google.gson.annotations.SerializedName
+import com.hocel.moviedb.data.models.genres.Genre
 
-data class Result(
+data class MovieDetails(
     @SerializedName("backdrop_path")
     val backdropPath: String?,
-    @SerializedName("genre_ids")
-    val genreIds: List<Int?>?,
+    @SerializedName("genres")
+    val genres: List<Genre?>?,
     @SerializedName("id")
     val id: Int?,
+    @SerializedName("original_language")
+    val originalLanguage: String?,
     @SerializedName("original_title")
     val originalTitle: String?,
     @SerializedName("overview")
@@ -20,8 +23,10 @@ data class Result(
     val posterPath: String?,
     @SerializedName("release_date")
     val releaseDate: String?,
+    @SerializedName("runtime")
+    val runtime: Int?,
     @SerializedName("title")
-    val title: String,
+    val title: String?,
     @SerializedName("vote_average")
-    val voteAverage: Double?
+    val voteAverage: Double?,
 )

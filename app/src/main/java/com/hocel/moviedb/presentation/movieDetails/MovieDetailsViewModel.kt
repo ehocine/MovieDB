@@ -5,9 +5,9 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hocel.moviedb.data.models.movieDetails.MovieDetailsResponse
+import com.hocel.moviedb.data.models.movieDetails.MovieDetails
 import com.hocel.moviedb.data.models.trendingMovies.MoviesResponse
-import com.hocel.moviedb.data.repository.Repository
+import com.hocel.moviedb.data.repository.RemoteRepository
 import com.hocel.moviedb.utils.uiState.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +17,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MovieDetailsViewModel @Inject constructor(
-    private val repository: Repository
+    private val remoteRepository: RemoteRepository
 ) : ViewModel() {
 
     private val _movieUiState: MutableStateFlow<UiState?> = MutableStateFlow(null)
@@ -26,8 +26,8 @@ class MovieDetailsViewModel @Inject constructor(
     private val _movieRecommendationUiState: MutableStateFlow<UiState?> = MutableStateFlow(null)
     val movieRecommendationUiState: StateFlow<UiState?> get() = _movieRecommendationUiState
 
-    private val _movieDetails: MutableState<MovieDetailsResponse?> = mutableStateOf(null)
-    val movieDetails: State<MovieDetailsResponse?> get() = _movieDetails
+    private val _movieDetails: MutableState<MovieDetails?> = mutableStateOf(null)
+    val movieDetails: State<MovieDetails?> get() = _movieDetails
 
     private val _movieRecommendations: MutableState<MoviesResponse?> = mutableStateOf(null)
     val movieRecommendations: State<MoviesResponse?> get() = _movieRecommendations
@@ -38,7 +38,7 @@ class MovieDetailsViewModel @Inject constructor(
             try {
                 _movieUiState.value = UiState.Loading
 
-                val response = repository.getMovieDetails(movieId)
+                val response = remoteRepository.getMovieDetails(movieId)
 
                 if (response.isSuccessful) {
                     _movieUiState.value = UiState.Success
@@ -58,7 +58,7 @@ class MovieDetailsViewModel @Inject constructor(
             try {
                 _movieRecommendationUiState.value = UiState.Loading
 
-                val response = repository.getMovieRecommendations(movieId)
+                val response = remoteRepository.getMovieRecommendations(movieId)
 
                 if (response.isSuccessful) {
                     _movieRecommendationUiState.value = UiState.Success

@@ -32,20 +32,19 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import com.hocel.moviedb.data.models.genres.Genre
-import com.hocel.moviedb.data.models.genres.Genres
 import com.hocel.moviedb.ui.theme.BackgroundColor
 import com.hocel.moviedb.ui.theme.Inputs
 import com.hocel.moviedb.ui.theme.TextColor
 
 @Composable
-fun DropDownOptions(
-    label: String,
-    optionsList: List<String>,
-    onOptionSelected: (String) -> Unit
+fun <T> DropDownOptions(
+    defaultValue: String,
+    optionsList: List<T>,
+    labelExtractor: (T) -> String,
+    onOptionSelected: (T) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    var selectedOption by remember { mutableStateOf(label) }
+    var selectedOption by remember { mutableStateOf(defaultValue) }
     val angle: Float by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f, label = ""
     )
@@ -70,7 +69,7 @@ fun DropDownOptions(
         Row(
             modifier = Modifier
                 .weight(weight = 8f)
-                .padding(start = 10.dp),
+                .padding(start = 10.dp)
         ) {
             Text(
                 text = selectedOption,
@@ -81,7 +80,6 @@ fun DropDownOptions(
         }
         IconButton(
             modifier = Modifier
-//                .alpha(ContentAlpha.medium)
                 .rotate(degrees = angle)
                 .weight(weight = 1.5f),
             onClick = { expanded = true }
@@ -103,12 +101,12 @@ fun DropDownOptions(
                 DropdownMenuItem(
                     onClick = {
                         expanded = false
-                        selectedOption = option
+                        selectedOption = labelExtractor(option)
                         onOptionSelected(option)
                     },
                     modifier = Modifier.background(BackgroundColor),
                     text = {
-                        Text(text = option, color = TextColor)
+                        Text(text = labelExtractor(option), color = TextColor)
                     }
                 )
             }

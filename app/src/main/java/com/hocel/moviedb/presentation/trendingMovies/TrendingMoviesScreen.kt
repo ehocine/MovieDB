@@ -19,27 +19,26 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
@@ -51,12 +50,13 @@ import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.hocel.moviedb.data.models.genres.Genre
 import com.hocel.moviedb.data.models.trendingMovies.Result
 import com.hocel.moviedb.presentation.components.FailedView
 import com.hocel.moviedb.presentation.navigation.Screens
 import com.hocel.moviedb.ui.theme.BackgroundColor
+import com.hocel.moviedb.ui.theme.ButtonColor
 import com.hocel.moviedb.ui.theme.TextColor
-import com.hocel.moviedb.utils.showStatusBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,9 +65,6 @@ fun TrendingMoviesScreen(
     navController: NavController
 ) {
     val context = LocalContext.current
-    LaunchedEffect(key1 = Unit) {
-        showStatusBar(context)
-    }
     val lifecycleOwner = LocalLifecycleOwner.current
     val trendingMoviesListFlow = remember(viewModel.pagedTrendingMovies, lifecycleOwner) {
         viewModel.pagedTrendingMovies.flowWithLifecycle(
@@ -78,11 +75,9 @@ fun TrendingMoviesScreen(
     val moviesListLazy = trendingMoviesListFlow.collectAsLazyPagingItems()
     var showSearchBar by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
-    var searchBarActive by remember { mutableStateOf(false) }
-
-    val sheetState = rememberModalBottomSheetState()
-    val scope = rememberCoroutineScope()
     var showBottomSheet by remember { mutableStateOf(false) }
+
+    var loadingStatus by remember { mutableStateOf(LoadingStatus.Loading) }
 
     val listOfGenres by viewModel.listOfGenres
 
@@ -118,13 +113,51 @@ fun TrendingMoviesScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundColor)
             )
+        },
+        floatingActionButton = {
+            if (loadingStatus == LoadingStatus.Loaded) {
+                ExtendedFloatingActionButton(
+                    text = {
+                        Text(
+                            text = "Filters",
+                            color = Color.White
+                        )
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Rounded.Menu,
+                            tint = Color.White,
+                            contentDescription = null
+                        )
+                    },
+                    containerColor = ButtonColor,
+                    onClick = {
+                        showBottomSheet = true
+                    }
+                )
+            }
         }
     ) { paddingValues ->
         if (showBottomSheet) {
             ModalBottomSheet(
                 containerColor = BackgroundColor,
                 onDismissRequest = { showBottomSheet = false }) {
-                FilterSheetContent(listOfGenres)
+                FilterSheetContent(
+                    mSelectedGenre =
+                    if (viewModel.selectedGenre.value.isNotEmpty())
+                        listOfGenres.genres.first { it.id == viewModel.selectedGenre.value.toInt() }
+                    else Genre(
+                        0,
+                        "All"
+                    ),
+                    minRating = viewModel.minRating.value,
+                    genresList = listOfGenres.genres,
+                    onApplyClicked = { genre, minRating ->
+                        viewModel.setFilters(if (genre != "0") genre else "", minRating)
+                        viewModel.getTrendingMoviesPaged()
+                        showBottomSheet = false
+                    }
+                )
             }
         }
         Box(
@@ -136,7 +169,6 @@ fun TrendingMoviesScreen(
             Column(modifier = Modifier.padding(6.dp)) {
                 SearchBar(
                     showSearchBar = showSearchBar,
-                    searchBarActive = searchBarActive,
                     searchText = searchText,
                     onSearch = {
 
@@ -147,22 +179,23 @@ fun TrendingMoviesScreen(
                     },
                     onActiveChange = {
                         showSearchBar = it
-                        searchBarActive = it
                     },
                     onCloseClicked = {
                         if (searchText.isNotBlank()) {
                             searchText = ""
                         } else {
                             showSearchBar = false
-                            searchBarActive = false
                             viewModel.getTrendingMoviesPaged()
                         }
-                    },
-                    onFilterClicked = {
-                        showBottomSheet = true
                     }
                 )
-                TrendingMoviesList(moviesListLazy = moviesListLazy, navController = navController)
+                TrendingMoviesList(
+                    moviesListLazy = moviesListLazy,
+                    navController = navController,
+                    setLoadingStatus = {
+                        loadingStatus = it
+                    }
+                )
             }
         }
     }
@@ -172,7 +205,8 @@ fun TrendingMoviesScreen(
 private fun TrendingMoviesList(
     modifier: Modifier = Modifier,
     moviesListLazy: LazyPagingItems<Result>?,
-    navController: NavController
+    navController: NavController,
+    setLoadingStatus: (LoadingStatus) -> Unit
 ) {
     LazyColumn(
         modifier = modifier,
@@ -181,6 +215,7 @@ private fun TrendingMoviesList(
         )
     ) {
         moviesListLazy?.let { it ->
+            setLoadingStatus(LoadingStatus.Loaded)
             items(count = it.itemCount) { index ->
                 Box(modifier = Modifier.fillMaxWidth()) {
                     index.let {
@@ -198,6 +233,7 @@ private fun TrendingMoviesList(
         when (moviesListLazy?.loadState?.refresh) {
 
             is LoadState.Error -> {
+                setLoadingStatus(LoadingStatus.Error)
                 item {
                     FailedView(
                         modifier = Modifier.fillParentMaxSize(),
@@ -210,6 +246,7 @@ private fun TrendingMoviesList(
             }
 
             is LoadState.Loading -> {
+                setLoadingStatus(LoadingStatus.Loading)
                 item {
                     Column(
                         verticalArrangement = Arrangement.Center,
@@ -223,8 +260,7 @@ private fun TrendingMoviesList(
                 }
             }
 
-            is LoadState.NotLoading -> Unit
-            else -> {}
+            else -> Unit
         }
         when (moviesListLazy?.loadState?.append) {
             is LoadState.Error -> {
@@ -267,7 +303,7 @@ private fun TrendingMoviesList(
                 }
             }
 
-            else -> {}
+            else -> Unit
         }
     }
 }
@@ -277,13 +313,11 @@ private fun TrendingMoviesList(
 private fun SearchBar(
     modifier: Modifier = Modifier,
     showSearchBar: Boolean,
-    searchBarActive: Boolean,
     searchText: String,
     onSearch: (String) -> Unit,
     onQueryChange: (String) -> Unit,
     onActiveChange: (Boolean) -> Unit,
-    onCloseClicked: () -> Unit,
-    onFilterClicked: () -> Unit
+    onCloseClicked: () -> Unit
 ) {
     AnimatedVisibility(
         modifier = modifier,
@@ -291,52 +325,57 @@ private fun SearchBar(
         enter = fadeIn() + expandVertically(),
         exit = fadeOut() + shrinkVertically(),
     ) {
-        DockedSearchBar(
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            query = searchText,
-            onQueryChange = {
-                onQueryChange(it)
-            },
-            onSearch = {
-                onSearch(it)
-            },
-            active = false,
-            onActiveChange = {
-                onActiveChange(it)
-            },
-            placeholder = {
-                Text(text = "Search", color = TextColor)
-            },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = null,
-                    tint = TextColor
-                )
-            },
-            trailingIcon = {
-                Row {
-                    Icon(
-                        modifier = Modifier.clickable {
-                            onCloseClicked()
-                        },
-                        imageVector = Icons.Default.Close,
-                        contentDescription = null,
-                        tint = TextColor
-                    )
-                    Icon(
-                        modifier = Modifier.clickable {
-                            onFilterClicked()
-                        },
-                        imageVector = Icons.Default.Menu,
-                        contentDescription = null,
-                        tint = TextColor
-                    )
-                }
-            }
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            DockedSearchBar(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                query = searchText,
+                onQueryChange = {
+                    onQueryChange(it)
+                },
+                onSearch = {
+                    onSearch(it)
+                },
+                active = false,
+                onActiveChange = {
+                    onActiveChange(it)
+                },
+                placeholder = {
+                    Text(text = "Search", color = TextColor)
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null,
+                        tint = TextColor
+                    )
+                },
+                trailingIcon = {
+                    Row {
+                        Icon(
+                            modifier = Modifier.clickable {
+                                onCloseClicked()
+                            },
+                            imageVector = Icons.Default.Close,
+                            contentDescription = null,
+                            tint = TextColor
+                        )
+                    }
+                }
+            ) {
 
+            }
         }
     }
+}
+
+private enum class LoadingStatus() {
+    Loading,
+    Loaded,
+    NotLoaded,
+    Error
 }

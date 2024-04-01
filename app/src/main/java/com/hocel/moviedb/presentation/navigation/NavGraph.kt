@@ -6,7 +6,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.hocel.moviedb.presentation.movieDetails.MovieDetails
+import com.hocel.moviedb.presentation.movieDetails.MovieDetailsScreen
 import com.hocel.moviedb.presentation.trendingMovies.TrendingMoviesScreen
 
 
@@ -33,7 +33,7 @@ fun NavGraph(
                 navArgument(name = "movieId") { type = NavType.IntType }
             )
         ) { from ->
-            MovieDetails(
+            MovieDetailsScreen(
                 navController = navController,
                 movieId = from.arguments?.getInt("movieId") ?: 0
             )

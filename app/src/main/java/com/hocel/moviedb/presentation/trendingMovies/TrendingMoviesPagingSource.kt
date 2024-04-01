@@ -6,8 +6,11 @@ import com.hocel.moviedb.data.api.MoviesService
 import com.hocel.moviedb.data.models.trendingMovies.Result
 import javax.inject.Inject
 
-class TrendingMoviesPagingSource @Inject constructor(private val api: MoviesService) :
-    PagingSource<Int, Result>() {
+class TrendingMoviesPagingSource @Inject constructor(
+    private val api: MoviesService,
+    private val minRating: Float,
+    private val genre: String
+) : PagingSource<Int, Result>() {
     override fun getRefreshKey(state: PagingState<Int, Result>): Int? {
         return state.anchorPosition?.let { anchorPosition ->
             state.closestPageToPosition(anchorPosition)?.prevKey?.plus(1)
@@ -18,7 +21,7 @@ class TrendingMoviesPagingSource @Inject constructor(private val api: MoviesServ
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Result> {
         return try {
             val page = params.key ?: 1
-            val response = api.getTrendingMovies(page = page)
+            val response = api.getTrendingMovies(page = page, rating = minRating, genre = genre)
 
             LoadResult.Page(
                 data = response.results!!.ifEmpty { emptyList() },
