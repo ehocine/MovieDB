@@ -1,4 +1,4 @@
-package com.hocel.moviedb.presentation.trendingMovies
+package com.hocel.moviedb.presentation.moviesList
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -28,12 +28,15 @@ import com.hocel.moviedb.ui.theme.BackgroundColor
 import com.hocel.moviedb.ui.theme.ButtonColor
 import com.hocel.moviedb.ui.theme.TextColor
 import com.hocel.moviedb.utils.DropDownOptions
+import com.hocel.moviedb.utils.SortByTypes
 
 @Composable
 fun FilterSheetContent(
     mSelectedGenre: Genre,
+    sortByDefault: SortByTypes,
     minRating: Float,
     genresList: List<Genre>,
+    sortByList: List<SortByTypes>,
     onApplyClicked: (genreId: String, minRating: Float) -> Unit
 ) {
     val list = listOf(Genre(0, "All")) + genresList
@@ -43,6 +46,7 @@ fun FilterSheetContent(
     )
 
     var selectedGenre by remember { mutableStateOf(mSelectedGenre) }
+    var selectedSortByType by remember { mutableStateOf(sortByDefault) }
     var selectedMinRating by remember { mutableFloatStateOf(minRating) }
 
     Column(Modifier.background(BackgroundColor)) {
@@ -53,13 +57,29 @@ fun FilterSheetContent(
                 fontWeight = FontWeight.Bold,
                 color = TextColor
             )
-            val labelExtractor: (Genre) -> String = { it.name }
+            val genreLabel: (Genre) -> String = { it.name }
             DropDownOptions(
                 defaultValue = selectedGenre.name,
                 optionsList = list,
-                labelExtractor = labelExtractor,
+                labelExtractor = genreLabel,
                 onOptionSelected = {
                     selectedGenre = it
+                })
+        }
+        Column(Modifier.padding(15.dp)) {
+            Text(
+                text = "Sort by",
+                fontSize = typography.titleLarge.fontSize,
+                fontWeight = FontWeight.Bold,
+                color = TextColor
+            )
+            val labelExtractor: (SortByTypes) -> String = { it.value }
+            DropDownOptions(
+                defaultValue = sortByDefault.value,
+                optionsList = sortByList,
+                labelExtractor = labelExtractor,
+                onOptionSelected = {
+                    selectedSortByType = it
                 })
         }
         Column(Modifier.padding(15.dp)) {

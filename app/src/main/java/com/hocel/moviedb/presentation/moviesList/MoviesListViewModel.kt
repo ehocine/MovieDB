@@ -1,4 +1,4 @@
-package com.hocel.moviedb.presentation.trendingMovies
+package com.hocel.moviedb.presentation.moviesList
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
@@ -8,10 +8,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.hocel.moviedb.data.models.genres.Genre
 import com.hocel.moviedb.data.models.genres.Genres
-import com.hocel.moviedb.data.models.trendingMovies.Result
+import com.hocel.moviedb.data.models.moviesList.Movie
 import com.hocel.moviedb.data.repository.RemoteRepository
+import com.hocel.moviedb.utils.SortByTypes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -19,13 +19,13 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class TrendingMoviesViewModel @Inject constructor(
+class MoviesListViewModel @Inject constructor(
     private val remoteRepository: RemoteRepository
 ) : ViewModel() {
 
-    private var _pagedTrendingMovies: MutableStateFlow<PagingData<Result>> =
+    private var _pagedMoviesList: MutableStateFlow<PagingData<Movie>> =
         MutableStateFlow(value = PagingData.empty())
-    val pagedTrendingMovies: MutableStateFlow<PagingData<Result>> get() = _pagedTrendingMovies
+    val pagedMoviesList: MutableStateFlow<PagingData<Movie>> get() = _pagedMoviesList
 
     private var _listOfGenres: MutableState<Genres> = mutableStateOf(Genres())
     val listOfGenres: State<Genres> = _listOfGenres
@@ -36,32 +36,36 @@ class TrendingMoviesViewModel @Inject constructor(
     var selectedGenre: MutableState<String> = mutableStateOf("")
         private set
 
+    var sortBy: MutableState<SortByTypes> = mutableStateOf(SortByTypes.PopularityDesc)
+        private set
+
     init {
-        getTrendingMoviesPaged()
+        getMoviesListPaged()
         viewModelScope.launch {
             _listOfGenres.value = remoteRepository.getListOfGenres()
         }
     }
 
-    fun setFilters(genre: String, rating: Float) {
+    fun setFilters(genre: String, rating: Float, sortByType: SortByTypes) {
         selectedGenre.value = genre
         minRating.value = rating
+        sortBy.value = sortByType
     }
 
-    fun getTrendingMoviesPaged() {
+    fun getMoviesListPaged() {
         viewModelScope.launch {
-            remoteRepository.getTrendingMoviesPaged(
-                minRating = minRating.value, genre = selectedGenre.value
+            remoteRepository.getMoviesListPaged(
+                minRating = minRating.value, genre = selectedGenre.value, sortBy = sortBy.value.code
             ).cachedIn(viewModelScope).collect {
-                    _pagedTrendingMovies.value = it
-                }
+                _pagedMoviesList.value = it
+            }
         }
     }
 
     fun searchMovies(query: String) {
         viewModelScope.launch {
             remoteRepository.searchMovies(query = query).cachedIn(viewModelScope).collect {
-                _pagedTrendingMovies.value = it
+                _pagedMoviesList.value = it
             }
         }
     }

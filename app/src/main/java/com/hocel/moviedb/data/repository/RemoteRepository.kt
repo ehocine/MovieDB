@@ -5,12 +5,13 @@ import androidx.paging.PagingConfig
 import com.hocel.moviedb.data.api.MoviesService
 import com.hocel.moviedb.data.database.favoriteMoviesDB.FavoriteMovieEntity
 import com.hocel.moviedb.data.database.favoriteMoviesDB.MoviesDAO
-import com.hocel.moviedb.data.models.genres.Genre
 import com.hocel.moviedb.data.models.genres.Genres
 import com.hocel.moviedb.data.models.movieDetails.MovieDetails
-import com.hocel.moviedb.data.models.trendingMovies.MoviesResponse
-import com.hocel.moviedb.presentation.trendingMovies.SearchMoviesPagingSource
-import com.hocel.moviedb.presentation.trendingMovies.TrendingMoviesPagingSource
+import com.hocel.moviedb.data.models.movieDetails.MovieReviews
+import com.hocel.moviedb.data.models.movieDetails.MovieVideos
+import com.hocel.moviedb.data.models.moviesList.MoviesResponse
+import com.hocel.moviedb.presentation.moviesList.MoviesListPagingSource
+import com.hocel.moviedb.presentation.moviesList.SearchMoviesPagingSource
 import kotlinx.coroutines.flow.Flow
 import retrofit2.Response
 import javax.inject.Inject
@@ -36,13 +37,13 @@ class RemoteRepository @Inject constructor(
         return moviesDAO.deleteAllFavoriteMovies()
     }
 
-    fun getTrendingMoviesPaged(minRating: Float, genre: String) = Pager(
+    fun getMoviesListPaged(minRating: Float, genre: String, sortBy: String) = Pager(
         config = PagingConfig(
             pageSize = 10,
             prefetchDistance = 1
         ),
         pagingSourceFactory = {
-            TrendingMoviesPagingSource(api, minRating, genre)
+            MoviesListPagingSource(api, minRating, genre, sortBy)
         }
     ).flow
 
@@ -60,9 +61,12 @@ class RemoteRepository @Inject constructor(
         }
     ).flow
 
-    suspend fun getMovieRecommendations(movieId: Int): Response<MoviesResponse> {
-        return api.movieRecommendations(movieId)
-    }
+    suspend fun getMovieRecommendations(movieId: Int): Response<MoviesResponse> =
+        api.movieRecommendations(movieId)
 
     suspend fun getListOfGenres(): Genres = api.getListOfGenres()
+
+    suspend fun getMovieVideos(movieId: Int): Response<MovieVideos> = api.getMovieVideos(movieId)
+
+    suspend fun getMovieReviews(movieId: Int): Response<MovieReviews> = api.getMovieReviews(movieId)
 }

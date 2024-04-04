@@ -1,9 +1,10 @@
 package com.hocel.moviedb.data.api
 
-import com.hocel.moviedb.data.models.genres.Genre
 import com.hocel.moviedb.data.models.genres.Genres
 import com.hocel.moviedb.data.models.movieDetails.MovieDetails
-import com.hocel.moviedb.data.models.trendingMovies.MoviesResponse
+import com.hocel.moviedb.data.models.movieDetails.MovieReviews
+import com.hocel.moviedb.data.models.movieDetails.MovieVideos
+import com.hocel.moviedb.data.models.moviesList.MoviesResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -15,7 +16,8 @@ interface MoviesService {
     suspend fun getTrendingMovies(
         @Query("page") page: Int,
         @Query("vote_average.gte") rating: Float,
-        @Query("with_genres") genre: String
+        @Query("with_genres") genre: String,
+        @Query("sort_by") sortBy: String
     ): MoviesResponse
 
 
@@ -37,5 +39,16 @@ interface MoviesService {
 
     @GET("3/genre/movie/list")
     suspend fun getListOfGenres(): Genres
+
+
+    @GET("3/movie/{movie_id}/videos")
+    suspend fun getMovieVideos(
+        @Path("movie_id") movieId: Int
+    ): Response<MovieVideos>
+
+    @GET("3/movie/{movie_id}/reviews")
+    suspend fun getMovieReviews(
+        @Path("movie_id") movieId: Int
+    ): Response<MovieReviews>
 
 }

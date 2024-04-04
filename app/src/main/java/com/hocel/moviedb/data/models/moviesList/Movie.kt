@@ -1,9 +1,9 @@
-package com.hocel.moviedb.data.models.trendingMovies
+package com.hocel.moviedb.data.models.moviesList
 
 
 import com.google.gson.annotations.SerializedName
 
-data class Result(
+data class Movie(
     @SerializedName("backdrop_path")
     val backdropPath: String?,
     @SerializedName("genre_ids")

@@ -7,7 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.hocel.moviedb.presentation.movieDetails.MovieDetailsScreen
-import com.hocel.moviedb.presentation.trendingMovies.TrendingMoviesScreen
+import com.hocel.moviedb.presentation.moviesList.MoviesListScreen
 
 
 @Composable
@@ -16,14 +16,16 @@ fun NavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screens.TrendingMoviesScreen.route,
+        startDestination = Screens.MoviesListScreen.route,
         route = "root"
     ) {
 
         composable(
-            route = Screens.TrendingMoviesScreen.route
+            route = Screens.MoviesListScreen.route,
         ) {
-            TrendingMoviesScreen(navController = navController)
+            MoviesListScreen(
+                navController = navController
+            )
         }
 
 

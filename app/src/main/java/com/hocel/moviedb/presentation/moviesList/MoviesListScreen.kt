@@ -1,4 +1,4 @@
-package com.hocel.moviedb.presentation.trendingMovies
+package com.hocel.moviedb.presentation.moviesList
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -51,28 +51,29 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.hocel.moviedb.data.models.genres.Genre
-import com.hocel.moviedb.data.models.trendingMovies.Result
+import com.hocel.moviedb.data.models.moviesList.Movie
 import com.hocel.moviedb.presentation.components.FailedView
 import com.hocel.moviedb.presentation.navigation.Screens
 import com.hocel.moviedb.ui.theme.BackgroundColor
 import com.hocel.moviedb.ui.theme.ButtonColor
 import com.hocel.moviedb.ui.theme.TextColor
+import com.hocel.moviedb.utils.SortByTypes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TrendingMoviesScreen(
-    viewModel: TrendingMoviesViewModel = hiltViewModel(),
+fun MoviesListScreen(
+    viewModel: MoviesListViewModel = hiltViewModel(),
     navController: NavController
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val trendingMoviesListFlow = remember(viewModel.pagedTrendingMovies, lifecycleOwner) {
-        viewModel.pagedTrendingMovies.flowWithLifecycle(
+    val moviesListFlow = remember(viewModel.pagedMoviesList, lifecycleOwner) {
+        viewModel.pagedMoviesList.flowWithLifecycle(
             lifecycleOwner.lifecycle,
             Lifecycle.State.STARTED
         )
     }
-    val moviesListLazy = trendingMoviesListFlow.collectAsLazyPagingItems()
+    val moviesListLazy = moviesListFlow.collectAsLazyPagingItems()
     var showSearchBar by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf("") }
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -150,11 +151,17 @@ fun TrendingMoviesScreen(
                         0,
                         "All"
                     ),
+                    sortByDefault = viewModel.sortBy.value,
                     minRating = viewModel.minRating.value,
                     genresList = listOfGenres.genres,
+                    sortByList = SortByTypes.entries,
                     onApplyClicked = { genre, minRating ->
-                        viewModel.setFilters(if (genre != "0") genre else "", minRating)
-                        viewModel.getTrendingMoviesPaged()
+                        viewModel.setFilters(
+                            if (genre != "0") genre else "",
+                            minRating,
+                            SortByTypes.PopularityAsc
+                        )
+                        viewModel.getMoviesListPaged()
                         showBottomSheet = false
                     }
                 )
@@ -185,7 +192,7 @@ fun TrendingMoviesScreen(
                             searchText = ""
                         } else {
                             showSearchBar = false
-                            viewModel.getTrendingMoviesPaged()
+                            viewModel.getMoviesListPaged()
                         }
                     }
                 )
@@ -204,7 +211,7 @@ fun TrendingMoviesScreen(
 @Composable
 private fun TrendingMoviesList(
     modifier: Modifier = Modifier,
-    moviesListLazy: LazyPagingItems<Result>?,
+    moviesListLazy: LazyPagingItems<Movie>?,
     navController: NavController,
     setLoadingStatus: (LoadingStatus) -> Unit
 ) {
